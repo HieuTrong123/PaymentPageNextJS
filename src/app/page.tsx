@@ -6,7 +6,7 @@ import Button from "@/components/Button/Button";
 import InfoITem from "@/components/InfoItem/InfoITem";
 import ProductItem from "@/components/ProductItem/ProductItem";
 // import getOrder from "./GetOrder";
-// import Swal from "sweetalert2";
+import Swal from "sweetalert2";
 // import dataRef from "@/components/Config/config";
 import ReactCardFlip from "react-card-flip";
 
@@ -22,7 +22,14 @@ export default function Home() {
       money: 100000,
     },
   ]);
-
+  const showAlert = () => {
+    Swal.fire({
+      title: "Success!",
+      text: "This is a success alert",
+      icon: "success",
+      confirmButtonText: "OK",
+    });
+  };
   function SetPayments() {
     setsStatePayment(!statePayment);
   }
@@ -39,6 +46,7 @@ export default function Home() {
                 </div>
                 className={stateDetais ? `${styles.listInfoOn}` : `${styles.listInfoOff}`}
                 */}
+          <button onClick={showAlert}>Show Alert</button>
           <div className={styles.info}>
             <ul className={`${styles.listInfo} ${styles.container}`}>
               <h1 className="textTitle">Khách hàng</h1>
