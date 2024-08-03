@@ -8,7 +8,7 @@ export default function InfoITem({
 }: {
   darkColor?: boolean;
   title: string;
-  content: string;
+  content: any;
 }) {
   return (
     <li className={`row ${classes.infoItem}`}>
