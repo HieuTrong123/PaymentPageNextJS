@@ -14,7 +14,7 @@ export default function ProductItem(props: any) {
       <div className={classes.inf}>
         <div className={classes.box_img}>
           <Image
-            src={props.content.image}
+            src={props.content.image || '/Product.png'}
             alt="error"
             width={372}
             height={288}

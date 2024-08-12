@@ -7,7 +7,7 @@ import Button from "@/components/Button/Button";
 // import { Link, useLocation, useNavigate } from 'react-router-dom'
 // import getOrder from "../PaymentPage/GetOrder";
 
-export default function DetailsProduct() {
+export default function DetailsProduct(prop:any) {
   // const [detailsInfo, setDetailsInfo] = useState(null);
   // const [loading, setLoading] = useState(true);
   // const [error, setError] = useState(null);
@@ -70,6 +70,7 @@ export default function DetailsProduct() {
           Lưu ý : Nếu đơn hàng có vấn đề, hoặc không đúng yêu cầu của mình liên
           hệ số điện thoại/ zalo : 0123456789 để được nhân viên hỗ trợ
         </p>
+        
       </div>
     </div>
   );

@@ -1,8 +1,14 @@
 import Image from "next/image";
 import classes from "./Navbar.module.css";
 import Button from "../Button/Button.js";
+import dataRef from "@/app/api/Config/config";
 
-import dataRef from "../Config/config.js";
+// function getLogo() {
+//   const brandName = (document.URL.match(/https:\/\/donhang\.(\w+?)\./) || [])[1];
+//   const ref = brandName || new URLSearchParams(document.URL).get('ref');
+//   const brand = (ref && Object.keys(dataRef).includes(ref)) ? dataRef[ref] : dataRef['default'];
+//   return brand.logo;
+// }
 
 export default function Navbar() {
   return (
