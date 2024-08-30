@@ -11,6 +11,59 @@
   padding: 0 !important;
   overflow: hidden;
 }
+.popup_container {
+  display: flex;
+  gap: 15px;
+}
+.popup_container h1 {
+  font-size: 20px;
+  padding-bottom: 0.5rem !important;
+}
+.popup_container p {
+  font-size: 16px;
+}
+.popup_left {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.popup_left h1 {
+  cursor: pointer;
+}
+.popup_right {
+  flex: 1;
+}
+.popup_right_top {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-bottom: dashed 2px #a4a2a2;
+  padding-bottom: 20px;
+}
+.box_popup {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.QR_popup {
+  width: 300px;
+}
+.popup_right_bottom {
+  padding: 20px 80px 10px 80px;
+}
+.rb_line {
+  border-bottom: solid 2px #efeeee;
+  margin-bottom: 10px;
+}
+.stt_right {
+  display: flex;
+  flex-direction: column;
+}
+.stt_btn {
+  margin-top: 18px;
+  margin-left: auto;
+}
+
 .maxHeight {
   height: 88vh;
 }
@@ -47,6 +100,7 @@
   justify-content: space-between;
   padding: 0.625rem 0;
   width: 90%;
+  gap: 60px;
   margin-left: auto;
   margin-right: auto;
   border-top: 1px solid #e7a8a8;
@@ -90,20 +144,34 @@
 }
 .box_btn {
   display: flex;
-  /* justify-content: space-between; */
+  justify-content: center;
   /* align-items: center; */
-  gap: 0.25rem;
+  gap: 1.25rem;
   padding: 0.875rem;
   border: 0.125rem solid #4ccad5;
-  background-color: rgba(76, 202, 213, 0.2);
-  width: fit-content;
-  border-radius: 0.313rem;
+  /* background-color: rgba(76, 202, 213, 0.2); */
+  /* width: fit-content; */
+  /* border-radius: 0.313rem; */
 
   /* padding-left: 0.625rem; */
 }
 .box_btn p {
-  font-size: 1.063rem;
+  font-size: 1.065rem;
 }
+.stt_left {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.stt_left p {
+  font-weight: 800;
+}
+.imgIcon {
+  height: 1.563rem;
+  width: auto;
+  margin-left: 10px;
+}
+
 .btn {
   margin: 0.625rem 0;
   /* transform: translateY(-100%); */
@@ -295,7 +363,7 @@
   flex-direction: column;
   gap: 0.938rem;
   /* min-height: 21.875rem; */
-  max-height: 19.5rem;
+  max-height: 23rem;
   overflow: auto;
 
   /* border-radius: 0.625rem; */
@@ -334,7 +402,7 @@
   .stt {
     flex-direction: column-reverse;
     align-items: normal;
-    gap: 0.625rem;
+    gap: 1.625rem;
     width: auto;
     margin-left: 0;
     margin-right: 0;

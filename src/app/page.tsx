@@ -6,16 +6,36 @@ import Button from "@/components/Button/Button";
 import InfoITem from "@/components/InfoItem/InfoITem";
 import ProductItem from "@/components/ProductItem/ProductItem";
 import Swal from "sweetalert2";
-import dataRef from "@/app/api/Config/config";
+import dataRef from "@/app/Config/config";
 import ReactCardFlip from "react-card-flip";
-import getOrder from "./api/host/common";
-import Head from "next/head";
+import Navbar from "@/components/Navbar/Navbar";
+import getOrder from "./common";
+import LoadingSpinner from "@/components/Loading/LoadingSpinner";
+import Popup from "@/components/Popup/Popup";
+
+import { Result } from "postcss";
+import { debug, error } from "console";
+// import { headers } from 'next/headers';
 
 function toVND(number: number) {
   return number.toLocaleString("it-IT", {
     style: "currency",
     currency: "VND",
   });
+}
+
+function openZalo(phone: string) {
+  //var zaloLink = "https://zalo.me/" + phone;
+
+  var zaloLink = "zalo://conversation?phone=" + phone;
+  var zaloWindow = window.open(zaloLink, "_blank");
+  if (zaloWindow) {
+    zaloWindow.focus();
+    console.log("success");
+  } else {
+    // error
+    console.log("ngốc");
+  }
 }
 function copyText(text: string, btn: any) {
   // Tạo một textarea tạm thời để chứa văn bản cần sao chép
@@ -39,15 +59,52 @@ function copyText(text: string, btn: any) {
   document.body.removeChild(textarea);
   btn.innerText = "Đã sao chép";
 }
+function redirectToBrandPage() {
+  // Extract the base URL from the current URL
+  const currentUrl = window.location.href;
+  const baseUrl = currentUrl.split("/")[2]; // Get the domain part of the URL
+
+  // Find the corresponding brand
+  const brandKey =
+    Object.keys(dataRef).find((key) => dataRef[key].url.includes(baseUrl)) ||
+    "default";
+
+  // Get the URL to redirect to
+  const redirectUrl = dataRef[brandKey].url;
+
+  // Redirect to the brand's URL
+  window.location.href = redirectUrl;
+}
+
+const showAlert = (text: any, callback: any, type: any) => {
+  Swal.fire({
+    title: "Thông báo",
+    text: text,
+    icon: type,
+    confirmButtonText: "OK",
+    showConfirmButton: true,
+    allowOutsideClick: false, // Ngăn không cho đóng bằng cách nhấp ra ngoài
+    allowEscapeKey: false, // Ngăn không cho đóng bằng phím Esc
+    showCancelButton: false,
+  }).then(callback);
+};
 
 export default function Home({ searchParams }: any) {
   const [statePayment, setsStatePayment] = useState(true);
   const [stateTks, setsStateTks] = useState(true);
+  const [isChecking, setIsChecking] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [isStop, setIsStop] = useState(false);
+  const [error, setError] = useState(null);
+  const [showPopup, setShowPopup] = useState(false);
+  const togglePopup = () => {
+    setShowPopup(!showPopup);
+  };
 
-  const [detailsInfo, setDetailsInfo] = useState({
+  var [detailsInfo, setDetailsInfo] = useState({
     success: true,
     data: {
-      sample: false,
+      sample: true,
       totalAccountAll: -579020,
       totalMoney: 38480000,
       discount: 0,
@@ -80,133 +137,93 @@ export default function Home({ searchParams }: any) {
       },
       products: [
         {
-          name: "Bộ an ninh",
-          number: 20,
-          color: "57",
+          name: "Áo sơ mi nữ tay dài",
+          number: 3,
+          color: "T107 LÔ 17-2",
           print: null,
-          embroider: "Thêu 3 vị trí",
-          mix: "phối như maket",
-          money: 680000,
-          sizeText: "10L, 10XL",
+          embroider: null,
+          mix: null,
+          money: 340000,
+          image:
+            "https://cdn.discordapp.com/attachments/1122918247751241838/1247109223167426560/20240603.665d82de33cf5.png?ex=66d22fb8&is=66d0de38&hm=f93d399ffdf5c52b9ef188ba2f20b2651d15b288aca9642df0c46d97db267fcd&",
+          sizeText: "3KXĐ",
           material: {
-            name: "Cotton lạnh",
+            name: "Kate Mỹ",
           },
         },
         {
-          name: "Tạp dề ngắn pha chế",
-          number: 10,
-          color: "297",
+          name: "Áo sơ mi nam tay dài",
+          number: 1,
+          color: "T107 LÔ 17-2",
           print: null,
           embroider: null,
-          mix: "viền túi màu 85 kaki thun",
-          money: 110000,
-          sizeText: "",
+          mix: null,
+          money: 360000,
+          image:
+            "https://cdn.discordapp.com/attachments/1122918247751241838/1247109340108820543/20240603.665d82de61f5a.png?ex=66d22fd4&is=66d0de54&hm=ffa45e6af9a2b81e276490b86ac655dbcef9d689c776d75ddf53fad16fca6ab7&",
+          sizeText: "1KXĐ",
+          material: {
+            name: "Kate Mỹ",
+          },
+        },
+        {
+          name: "Quần tây nữ ống suông",
+          number: 3,
+          color: "SỐ 8",
+          print: null,
+          embroider: null,
+          mix: null,
+          money: 330000,
+          image:
+            "https://cdn.discordapp.com/attachments/1122918247751241838/1247109170218537040/20240603.665d82de1c4f3.png?ex=66d22fac&is=66d0de2c&hm=00a1eb9eed418680a9b7af0d2ed77e21bc1a92dd3621f4b1a30cc1bd46abf910&",
+          sizeText: "3KXĐ",
           material: {
             name: "Kaki Thun",
           },
         },
         {
-          name: "Áo sơ mi nữ tay dài NV kinh doanh",
-          number: 4,
-          color: "MR55-1A",
+          name: "Áo vest Nữ form BLAZER tay dài 1 lớp",
+          number: 3,
+          color: "SỐ 8",
           print: null,
           embroider: null,
           mix: null,
-          money: 410000,
-          sizeText: "4M",
+          money: 700000,
+          image:
+            "https://cdn.discordapp.com/attachments/1122918247751241838/1247109286392500276/20240603.665d82de4888f.png?ex=66d22fc8&is=66d0de48&hm=31637bbcd85eb981f0f942396ea4029fab060a60ae6e01fe90f3f57b24e9667f&",
+          sizeText: "3KXĐ",
           material: {
-            name: "Kate Model",
+            name: "Kaki Thun",
           },
         },
         {
-          name: "Áo sơ mi cổ tròn quản lí FB",
+          name: "Áo vest nam tay dài 1 lớp",
           number: 2,
-          color: "MRS 75-6",
+          color: "SỐ 8",
           print: null,
           embroider: null,
           mix: null,
-          money: 410000,
-          sizeText: "2M",
+          money: 1100000,
+          image:
+            "https://cdn.discordapp.com/attachments/1122918247751241838/1247109404331868180/20240603.665d82de79297.png?ex=66d22fe4&is=66d0de64&hm=0dae7237fb1d8168b6aee3b47e5d1ba066eb768c6b1aea670fa7d7d78211c3f4&",
+          sizeText: "2KXĐ",
           material: {
-            name: "Kate Model",
-          },
-        },
-        {
-          name: "Áo sơ mi nam tay ngắn",
-          number: 10,
-          color: "MRS 75-6",
-          print: null,
-          embroider: null,
-          mix: null,
-          money: 400000,
-          sizeText: "2M, 6L, 2XL",
-          material: {
-            name: "Kate Model",
-          },
-        },
-        {
-          name: "Áo vest nữ NV kinh doanh tay dài 2 lớp",
-          number: 4,
-          color: "TRS 105-6",
-          print: null,
-          embroider: null,
-          mix: null,
-          money: 1800000,
-          sizeText: "4M",
-          material: {
-            name: "Cashmere italy",
-          },
-        },
-        {
-          name: "Chân váy bút chì form dài có lót NV kinh doanh",
-          number: 4,
-          color: "TRS 105-6",
-          print: null,
-          embroider: null,
-          mix: null,
-          money: 430000,
-          sizeText: "4M",
-          material: {
-            name: "Cashmere italy",
-          },
-        },
-        {
-          name: "Áo vest nữ tay dài 2 lớp quản lí FB",
-          number: 2,
-          color: "TRS 105-6",
-          print: null,
-          embroider: null,
-          mix: "như maket màu 85 kaki thun",
-          money: 1500000,
-          sizeText: "2M",
-          material: {
-            name: "Cashmere italy",
-          },
-        },
-        {
-          name: "Quần tây nữ quản lí FB",
-          number: 2,
-          color: "TRS 105-6",
-          print: null,
-          embroider: null,
-          mix: null,
-          money: 450000,
-          sizeText: "2M",
-          material: {
-            name: "Cashmere italy",
+            name: "Kaki Thun",
           },
         },
         {
           name: "Quần tây nam",
-          number: 10,
-          color: "QT 808-1",
+          number: 2,
+          color: "SỐ 8",
           print: null,
           embroider: null,
           mix: null,
-          money: 450000,
-          sizeText: "2M, 6L, 2XL",
+          money: 350000,
+          image:
+            "https://cdn.discordapp.com/attachments/1122918247751241838/1247109472992759858/20240603.665d82de929c6.png?ex=66d22ff4&is=66d0de74&hm=5d59b6429415ab521fc061d007de4cc55c757cc9d22f1181b3c81a48d9e299f1&",
+          sizeText: "2KXĐ",
           material: {
-            name: "Cashmere italy",
+            name: "Kaki Thun",
           },
         },
       ],
@@ -246,35 +263,167 @@ export default function Home({ searchParams }: any) {
   });
 
   useEffect(() => {
-    getOrder(searchParams.order_hash)
-      .then(setDetailsInfo)
-      .then(() => {
-        document.title = detailsInfo.data?.code;
-      });
-    return () => {};
-  }, []);
-  // test xem lôiz gì
-  try {
-    window.location.host;
-  } catch {
-    return <></>;
-  }
-  // Kiểm tra domain xem user truy cập từ brand nào
-  const ref = (window.location.host.match(/\w+\.(\w+)\.vn/) || [])[1];
-  const BankInfo = (dataRef[ref] || dataRef.default).bank;
-  const imgTks = (dataRef[ref] || dataRef.default).img;
-  const urlMain = (dataRef[ref] || dataRef.default).url;
+    const timer = setTimeout(() => {
+      setsStateTks(!stateTks);
+    }, 6000);
 
-  const showAlert = () => {
-    Swal.fire({
-      title: "Success!",
-      text: "This is a success alert",
-      icon: "success",
-      confirmButtonText: "OK",
-    });
-  };
+    // Dọn dẹp bộ đếm thời gian khi component bị hủy hoặc khi count thay đổi
+    return () => clearTimeout(timer);
+  }, [stateTks]);
+
+  let fetting = false;
+  // useEffect(() => {
+  //   (async () => {
+  //     if(fetting) return;
+  //     fetting = true;
+  //     const search = new URLSearchParams(window.location.search);
+  //     searchParams = Object.fromEntries(search.entries());
+  //     const test = await getOrder(searchParams.order_hash);
+  //     setDetailsInfo(test);
+  //     setLoading(false);
+  //     fetting = false;
+  //   })();
+  // }, [searchParams.order_hash]);
+
+  useEffect(() => {
+    (async () => {
+      if (fetting) return;
+      fetting = true;
+
+      try {
+        const search = new URLSearchParams(window.location.search);
+        const searchParams = Object.fromEntries(search.entries());
+
+        if (!searchParams.order_hash) {
+          showAlert(
+            "Không tìm thấy sản phẩm!",
+            (result: { isConfirmed: any }) => {
+              if (result.isConfirmed) {
+                redirectToBrandPage(); // reload lại trang
+              }
+            },
+            "error"
+          );
+          return;
+        }
+
+        const test = await getOrder(searchParams.order_hash);
+        setDetailsInfo(test);
+      } catch (error) {
+        showAlert(
+          "Không tìm thấy sản phẩm!",
+          (result: { isConfirmed: any }) => {
+            if (result.isConfirmed) {
+              redirectToBrandPage(); // reload lại trang
+            }
+          },
+          "error"
+        );
+      } finally {
+        setLoading(false);
+        fetting = false;
+      }
+    })();
+  }, [searchParams.order_hash]);
+
+  useEffect(() => {
+    if (detailsInfo) {
+      document.title = "Thông tin đơn hàng " + detailsInfo.data?.code;
+      window.detailsInfo = detailsInfo;
+    }
+  }, [detailsInfo]);
+
+  useEffect(() => {
+    // Hàm kiểm tra điều kiện
+    const checkCondition = async () => {
+      console.log("checkCondition");
+      if (isChecking || isStop) return; // Nếu đang kiểm tra, bỏ qua lần gọi mới
+      if (
+        ["đã gửi", "hoàn thành"].includes(
+          detailsInfo?.data.status.text.toLocaleLowerCase()
+        )
+      ) {
+        setIsStop(true);
+        return;
+      } // Nếu đã gửi thì không update
+      setIsChecking(true);
+      try {
+        while (document.hidden) await new Promise((r) => setTimeout(r, 500)); // Chờ người dùng bật lại tab, nếu có thay đổi thì reload luôn.
+        const data = await getOrder(searchParams.order_hash);
+        // debugger;
+        if (
+          detailsInfo &&
+          data.success &&
+          JSON.stringify(data.data) !== JSON.stringify(detailsInfo)
+        ) {
+          // Nếu data có thay đổi
+          // Nếu thay đổi về số tiền
+          if (
+            data.data.totalPay !== detailsInfo.data.totalPay &&
+            data.data.totalPay == 0
+          ) {
+            setIsStop(true);
+            const paymentAmount =
+              detailsInfo.data.totalPay - data.data.totalPay; // tiền trước trừ tiền sau
+            showAlert(
+              "Thanh toán thành công  ",
+              (result: { isConfirmed: any }) => {
+                if (result.isConfirmed) {
+                  window.location.reload(); // reload lại trang
+                }
+              },
+              "success"
+            );
+          } else {
+            window.location.reload(); // reload lại trang
+          }
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setIsChecking(false); // Kết thúc kiểm tra
+      }
+    };
+
+    // Thiết lập interval để kiểm tra điều kiện mỗi 60 giây
+    const intervalId = setInterval(checkCondition, 60 * 1000);
+
+    // Dọn dẹp interval khi component bị unmount
+    return () => clearInterval(intervalId);
+  }, [isChecking]); //Chạy lại effect nếu isChecking thay đổi
+
+  if (loading || typeof window === "undefined") {
+    return <LoadingSpinner />;
+  }
+
+  const ref = (window.location.host.match(/\w+\.(\w+)\.vn/) || [])[1];
+  const urlMain = (dataRef[ref] || dataRef.default).url;
+  const BankInfo = (dataRef[ref] || dataRef.default).bank;
+  const imgTks = (dataRef[ref] || dataRef.default).imgTks;
+  const CSKH = (dataRef[ref] || dataRef.default).CSKH;
+
+  // Kiểm tra domain xem user truy cập từ brand nào
+
+  const search = new URLSearchParams(window.location.search);
+  searchParams = Object.fromEntries(search.entries());
+  if (!searchParams.order_hash) window.location.href = `${urlMain}`;
+
+  if (error) {
+    window.location.href = `${urlMain}`;
+  }
+
   function SetPayments() {
     setsStatePayment(!statePayment);
+  }
+
+  const statusElement = document.getElementById("statusText");
+  if (
+    statusElement &&
+    detailsInfo &&
+    detailsInfo.data &&
+    detailsInfo.data.status
+  ) {
+    statusElement.innerHTML = `${detailsInfo.data.status.text}`;
   }
 
   return (
@@ -282,7 +431,7 @@ export default function Home({ searchParams }: any) {
       <div className={`l-8 c-12 ${styles.right}`}>
         <div className={styles.info}>
           <ul className={`${styles.listInfo} ${styles.container}`}>
-            <h1 className="textTitle">Khách hàng</h1>
+            <h1 className="textTitle">Thông tin khách hàng</h1>
             <InfoITem
               title="Khách hàng"
               content={detailsInfo.data.customer.name}
@@ -297,7 +446,7 @@ export default function Home({ searchParams }: any) {
             />
           </ul>
           <ul className={`${styles.listInfo} ${styles.container}`}>
-            <h1 className="textTitle">Nhân viên</h1>
+            <h1 className="textTitle">Nhân viên tư vấn</h1>
             <InfoITem
               title="Nhân viên"
               content={
@@ -310,22 +459,6 @@ export default function Home({ searchParams }: any) {
               title="Số điện thoại"
               content={detailsInfo.data.customer.assign.phone}
             />
-            <div className={styles.contact_img}>
-              <Image
-                // onClick={() => openZalo(customer.assign.phone)}
-                src={"/zalo_icon.png"}
-                alt="error"
-                width={372}
-                height={288}
-              />
-              <Image src={"/Phone.png"} alt="error" width={372} height={288} />
-              <Image
-                src={"/Facebook.png"}
-                alt="error"
-                width={372}
-                height={288}
-              />
-            </div>
           </ul>
 
           {/* <div className={styles.box_img}>
@@ -349,302 +482,378 @@ export default function Home({ searchParams }: any) {
           </div>
 
           <div className={styles.stt}>
-            <div className={styles.box_btn}>
-              <p className="">Trạng thái :</p>
-              <p className="textTitle">{detailsInfo.data.status.text}</p>
-              {/* <Button className={['đã gửi', 'hoàn thành'].includes(status.text.toLocaleLowerCase()) ? styles.btn_stt_success : styles.btn_stt_warning}>
-                                {status.text}
-                            </Button> */}
-              {/* <a href='#QR' onClick={SetDetails}>
-                                <Button className={`l-0 c-12 ${styles.btn}`}>
-                                    Thanh Toán
-                                </Button>
-                            </a> */}
+            <div className={styles.stt_left}>
+              <p>
+                Thời gian sản xuất dự kiến từ 8-10 ngày. Không tính chủ nhật và
+                nghỉ lễ.
+              </p>
+              <p>
+                Quý khách nếu có thắc mắc: tình trạng đơn, thông tin đơn hàng,
+                góp ý và khiếu nại, ...
+              </p>
+              <p>
+                Vui lòng liên hệ chăm sóc khách hàng :{CSKH}
+                <Image
+                  onClick={() => {
+                    openZalo(CSKH);
+                  }}
+                  src={"/zalo_icon.png"}
+                  alt="error"
+                  width={372}
+                  height={288}
+                  className={styles.imgIcon}
+                />
+              </p>
             </div>
-            <div className="c-12 l-6">
+
+            <div className={`${styles.stt_right} c-12 l-5`}>
               <InfoITem
                 darkColor={true}
                 title="Tổng tiền"
                 content={
                   <>
-                    {toVND(detailsInfo.data.totalMoneyAfterVATorDiscount)}
-                    <br />
-                    (VAT: {detailsInfo.data.totalVAT})
+                    {toVND(detailsInfo.data.totalMoney)}
+                    {/* <br />
+                    (VAT: {detailsInfo.data.totalVAT}) */}
                   </>
                 }
               />
+              {detailsInfo.data.discount > 0 ? (
+                <InfoITem
+                  darkColor={true}
+                  title="Giảm giá"
+                  content={`${toVND(detailsInfo.data.discount)}`}
+                />
+              ) : (
+                <> </>
+              )}
+
+              {/* <InfoITem
+                darkColor={true}
+                title="Giảm giá"
+                content={`${toVND(detailsInfo.data.discount)} (${Math.round(detailsInfo.data.totalPay / detailsInfo.data.totalMoneyAfterVATorDiscount * 100)}%)`}
+              /> */}
+
+              {detailsInfo.data.discount > 0 ? (
+                <InfoITem
+                  darkColor={true}
+                  title="Sau giảm giá"
+                  content={`${toVND(
+                    detailsInfo.data.totalMoneyAfterVATorDiscount
+                  )} `}
+                />
+              ) : (
+                <> </>
+              )}
+
               <InfoITem
                 darkColor={true}
                 title="Đã thanh toán"
-                content={`${toVND(detailsInfo.data.totalPay)} (${Math.round(
-                  (detailsInfo.data.totalPay /
-                    detailsInfo.data.totalMoneyAfterVATorDiscount) *
-                    100
-                )}%)`}
+                content={`${toVND(detailsInfo.data.totalPay)} `}
               />
-              <InfoITem
+              {/* <InfoITem
                 darkColor={true}
                 title="Cần thanh toán"
                 content={
                   <>
-                    {toVND(
-                      detailsInfo.data.totalMoneyAfterVATorDiscount -
-                        detailsInfo.data.totalPay
-                    )}{" "}
-                    <br /> (Chưa bao gồm phí ship){" "}
+                    {toVND(detailsInfo.data.totalMoneyAfterVATorDiscount - detailsInfo.data.totalPay)} <br /> (Chưa bao gồm phí ship){" "}
                   </>
                 }
-              />
-            </div>
-          </div>
-        </div>
-      </div>
+              /> */}
+              <Button className={styles.stt_btn} onClick={togglePopup}>
+                Thanh toán
+              </Button>
+              <Popup show={showPopup} onClose={togglePopup}>
+                <div className={styles.popup_container}>
+                  <div
+                    className={`${styles.container} ${styles.popup_left} l-5`}
+                  >
+                    <p>Lưu ý</p>
+                    <div>
+                      <h1>Không chỉnh sửa thông tin</h1>
+                      <p>
+                        Mã QR đã đi kèm SỐ TÀI KHOẢN, SỐ TIỀN và MÃ GÓI CƯỚC,
+                        bạn vui lòngkhông chỉnh sửa thông tin sau khi quét mã
+                      </p>
+                    </div>
 
-      <div className={`${styles.qrpay}`}>
-        {detailsInfo.data.totalAccountAll > 0 ? (
-          <ReactCardFlip flipDirection="horizontal" isFlipped={statePayment}>
-            <div
-              id="QR"
-              className={`${styles.container} ${styles.height_left}`}
-            >
-              <div className={styles.Payhead}>
-                {/* <Image src={lamp} /> */}
-                <p className="textTitle">Mã QR thanh toán</p>
-              </div>
-              <div className={`${styles.pay_container}`}>
-                <div className={` ${styles.box_QR}`}>
-                  <img
-                    className={styles.QR_img}
-                    // src={`https://img.vietqr.io/image/${BankInfo.BANKID}-${
-                    //   BankInfo.ACCOUNT_NO
-                    // }-compact.png?amount=${totalPay}&addInfo=${
-                    //   detailsInfo.code + " Thanh toan don hang"
-                    // }&accountName=${BankInfo.ACCOUNT_NAME}`}
-                    src={`https://img.vietqr.io/image/${BankInfo.BANKID}-${
-                      BankInfo.ACCOUNT_NO
-                    }-compact.png?amount=${
-                      detailsInfo.data.totalMoneyAfterVATorDiscount -
-                      detailsInfo.data.totalPay
-                    }&addInfo=${
-                      detailsInfo.data.code + " Thanh toan don hang"
-                    }&accountName=${BankInfo.ACCOUNT_NAME}`}
-                    alt="error"
-                    width={372}
-                    height={288}
-                  />
-                </div>
-                <div className="">
-                  <div className={styles.pay_container_right}>
-                    <div className={styles.bank}>
-                      <Image
-                        src={BankInfo.BANKLOGO}
+                    <div>
+                      <h1>Không thể quét mã QR</h1>
+                      <p>
+                        Mã QR đã đi kèm SỐ TÀI KHOẢN, SỐ TIỀN và MÃ GÓI CƯỚC,
+                        bạn vui lòngkhông chỉnh sửa thông tin sau khi quét mã
+                      </p>
+                    </div>
+
+                    <div>
+                      <h1>Tự động kích hoạt gói cước</h1>
+                      <p>
+                        Mã QR đã đi kèm SỐ TÀI KHOẢN, SỐ TIỀN và MÃ GÓI CƯỚC,
+                        bạn vui lòngkhông chỉnh sửa thông tin sau khi quét mã
+                      </p>
+                    </div>
+
+                    <div>
+                      <h1>Liên hệ với chúng tôi</h1>
+                      <p>
+                        Mã QR đã đi kèm SỐ TÀI KHOẢN, SỐ TIỀN và MÃ GÓI CƯỚC,
+                        bạn vui lòngkhông chỉnh sửa thông tin sau khi quét mã
+                      </p>
+                    </div>
+
+                    <div>
+                      <h1>Xuất hóa đơn</h1>
+                    </div>
+                  </div>
+                  <div className={`${styles.container} ${styles.popup_right}`}>
+                    <div className={styles.popup_right_top}>
+                      <h1>Tạo mã gói cước thành công</h1>
+                      <p>
+                        Vui lòng kiểm tra thông tin dưới đây và quét mã QR để
+                        thanh toán
+                      </p>
+                      <img
+                        className={styles.QR_popup}
+                        src={`https://img.vietqr.io/image/${BankInfo.BANKID}-${
+                          BankInfo.ACCOUNT_NO
+                        }-compact.png?amount=${
+                          detailsInfo.data.totalMoneyAfterVATorDiscount -
+                          detailsInfo.data.totalPay
+                        }&addInfo=${
+                          detailsInfo.data.code + " Thanh toan don hang"
+                        }&accountName=${BankInfo.ACCOUNT_NAME}`}
                         alt="error"
                         width={372}
                         height={288}
                       />
+                    </div>
+                    <div className={styles.popup_right_bottom}>
+                      <div className={styles.rb_line}>
+                        <div className={styles.box_popup}>
+                          <p>Ngân hàng</p>
+                          <p className="darkColor">Techcombank</p>
+                        </div>
+                        <div className={styles.box_popup}>
+                          <p>Tên tài khoản</p>
+                          <p className="darkColor">Mai Hong Phong</p>
+                        </div>
+                        <div className={styles.box_popup}>
+                          <p>Số tài khoản</p>
+                          <p className="darkColor">1561544561123</p>
+                        </div>
+                      </div>
                       <div>
-                        {/* <p>
-                                                    Ngân hàng
-                                                </p> */}
-                        <p className="darkColor">{BankInfo.BANKNAME}</p>
+                        <div className={styles.box_popup}>
+                          <p>Số tiền cần chuyển</p>
+                          <p className="darkColor">550.000 đ</p>
+                        </div>
+                        <div className={styles.box_popup}>
+                          <p>Nội dung chuyển khoản</p>
+                          <p className="darkColor">43J8Z3</p>
+                        </div>
                       </div>
                     </div>
-                    <div className={styles.box_flex}>
-                      <p>Chủ tài khoản:</p>
-                      <p className="darkColor">{BankInfo.ACCOUNT_NAME}</p>
-                    </div>
-                    <div className={`row`}>
-                      <div className={`col l-7 c-7 ${styles.box_flex}`}>
-                        <p>Số tài khoản:</p>
-                        <p className="darkColor">{BankInfo.ACCOUNT_NO}</p>
-                      </div>
-                      <div className={`col l-5 c-5 ${styles.box_btn_pay}`}>
-                        <Button
-                          onClick={(event: any) => {
-                            copyText(BankInfo.ACCOUNT_NO, event.currentTarget);
-                          }}
-                          className={styles.btn_pay}
-                        >
-                          Sao chép
-                        </Button>
-                      </div>
-                    </div>
-                    <div className={`row`}>
-                      <div className={`col l-7 c-7 ${styles.box_flex}`}>
-                        <p>Số tiền:</p>
-                        <p className="darkColor">
-                          {toVND(detailsInfo.data.totalAccountAll)}
-                        </p>
-                      </div>
-                      <div className={`col l-5 c-5 ${styles.box_btn_pay}`}>
-                        <Button
-                          onClick={(event: any) => {
-                            copyText(
-                              "" + detailsInfo.data.totalAccountAll,
-                              event.currentTarget
-                            );
-                          }}
-                          className={styles.btn_pay}
-                        >
-                          Sao chép
-                        </Button>
-                      </div>
-                    </div>
-                    <div className={`row`}>
-                      <div className={`col l-7 c-7 ${styles.box_flex}`}>
-                        <p>Nội dung:</p>
-                        <p className="darkColor">{detailsInfo.data.code}</p>
-                      </div>
-                      <div className={`col l-5 c-5 ${styles.box_btn_pay}`}>
-                        <Button
-                          onClick={(event: any) => {
-                            copyText(
-                              detailsInfo.data.code,
-                              event.currentTarget
-                            );
-                          }}
-                          className={styles.btn_pay}
-                        >
-                          Sao chép
-                        </Button>
-                      </div>
-                    </div>
+                  </div>
+                </div>
+              </Popup>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className={`${styles.qrpay}`}>
+        {detailsInfo.data.totalAccountAll > 0 ? (
+          //  <ReactCardFlip flipDirection="horizontal" isFlipped={statePayment}>
+          <div id="QR" className={`${styles.container} ${styles.height_left}`}>
+            <div className={styles.Payhead}>
+              <p className="textTitle">Mã QR thanh toán</p>
+            </div>
+            <div className={`${styles.pay_container}`}>
+              <div className={` ${styles.box_QR}`}>
+                <img
+                  className={styles.QR_img}
+                  src={`https://img.vietqr.io/image/${BankInfo.BANKID}-${
+                    BankInfo.ACCOUNT_NO
+                  }-compact.png?amount=${
+                    detailsInfo.data.totalMoneyAfterVATorDiscount -
+                    detailsInfo.data.totalPay
+                  }&addInfo=${
+                    detailsInfo.data.code + " Thanh toan don hang"
+                  }&accountName=${BankInfo.ACCOUNT_NAME}`}
+                  alt="error"
+                  width={372}
+                  height={288}
+                />
+              </div>
+
+              <div className={styles.pay_container_right}>
+                <div className={styles.bank}>
+                  <Image
+                    src={BankInfo.BANKLOGO}
+                    alt="error"
+                    width={372}
+                    height={288}
+                  />
+                  <div>
+                    <p className="darkColor">{BankInfo.BANKNAME}</p>
+                  </div>
+                </div>
+                <div className={styles.box_flex}>
+                  <p>Chủ tài khoản:</p>
+                  <p className="darkColor">{BankInfo.ACCOUNT_NAME}</p>
+                </div>
+                <div className={`row`}>
+                  <div className={`col l-7 c-7 ${styles.box_flex}`}>
+                    <p>Số tài khoản:</p>
+                    <p className="darkColor">{BankInfo.ACCOUNT_NO}</p>
+                  </div>
+                  <div className={`col l-5 c-5 ${styles.box_btn_pay}`}>
                     <Button
+                      onClick={(event: any) => {
+                        copyText(BankInfo.ACCOUNT_NO, event.currentTarget);
+                      }}
+                      className={styles.btn_pay}
+                    >
+                      Sao chép
+                    </Button>
+                  </div>
+                </div>
+                <div className={`row`}>
+                  <div className={`col l-7 c-7 ${styles.box_flex}`}>
+                    <p>Số tiền:</p>
+                    <p className="darkColor">
+                      {toVND(detailsInfo.data.totalAccountAll)}
+                    </p>
+                  </div>
+                  <div className={`col l-5 c-5 ${styles.box_btn_pay}`}>
+                    <Button
+                      onClick={(event: any) => {
+                        copyText(
+                          "" + detailsInfo.data.totalAccountAll,
+                          event.currentTarget
+                        );
+                      }}
+                      className={styles.btn_pay}
+                    >
+                      Sao chép
+                    </Button>
+                  </div>
+                </div>
+                <div className={`row`}>
+                  <div className={`col l-7 c-7 ${styles.box_flex}`}>
+                    <p>Nội dung:</p>
+                    <p className="darkColor">{detailsInfo.data.code}</p>
+                  </div>
+                  <div className={`col l-5 c-5 ${styles.box_btn_pay}`}>
+                    <Button
+                      onClick={(event: any) => {
+                        copyText(detailsInfo.data.code, event.currentTarget);
+                      }}
+                      className={styles.btn_pay}
+                    >
+                      Sao chép
+                    </Button>
+                  </div>
+                </div>
+                <em>
+                  Hệ thống sẽ tự cập nhật trạng thái thanh toán trong vòng 5
+                  phút. Nếu quá thời gian trên mà hệ thống chưa cập nhật, hãy
+                  liên hệ nhân viên tư vấn hoặc CSKH để được hỗ trợ.
+                </em>
+                {/* <Button
                       onClick={SetPayments}
                       className={` ${styles.btn_QR}`}
                     >
                       Hủy
-                    </Button>
-                  </div>
-                </div>
+                    </Button> */}
               </div>
             </div>
-
-            <div
-              className={`${styles.container} ${styles.paymentMT} ${styles.height_left}`}
-            >
-              <div className={styles.box_flex}>
-                <Image
-                  src={"/iconscheck.png"}
-                  alt="error"
-                  width={372}
-                  height={288}
-                />
-                <p>Quý khách vui lòng kiểm tra lại thông tin cá nhân.</p>
-              </div>
-              <div className={styles.box_flex}>
-                <p>
-                  Nếu có bất kỳ vấn đề gì với đơn hàng, xin vui lòng liên hệ
-                  ngay qua số điện thoại/Zalo:{" "}
-                  {detailsInfo.data.customer.assign.phone} để được hỗ trợ nhanh
-                  chóng.
-                </p>
-                <Image
-                  src={"/iconsSupport.png"}
-                  alt="error"
-                  width={372}
-                  height={288}
-                />
-              </div>
-              <div className={styles.box_flex}>
-                <Image
-                  src={"/iconsPayment.png"}
-                  alt="error"
-                  width={372}
-                  height={288}
-                />
-                <p>
-                  Vui lòng thanh toán số tiền trong đơn hàng để chúng tôi có thể
-                  xử lý đơn hàng của Quý khách ngay lập tức.
-                </p>
-              </div>
-              <Button onClick={SetPayments} className={styles.btn_MT}>
-                Thanh toán
-              </Button>
-            </div>
-          </ReactCardFlip>
+          </div>
         ) : (
-          <ReactCardFlip flipDirection="horizontal" isFlipped={stateTks}>
-            <div
-              id="QR"
-              className={`${styles.container} ${styles.height_left} ${styles.tks}`}
-            >
-              <div className={styles.Payhead}>
-                <Image
-                  src={imgTks}
-                  className={styles.imgTks}
-                  alt="error"
-                  width={372}
-                  height={288}
-                />
-              </div>
+          // <div
+          //   className={`${styles.container} ${styles.paymentMT} ${styles.height_left}`}
+          // >
+          //   <div className={styles.box_flex}>
+          //     <Image
+          //       src={"/iconscheck.png"}
+          //       alt="error"
+          //       width={372}
+          //       height={288}
+          //     />
+          //     <p>Quý khách vui lòng kiểm tra lại thông tin cá nhân.</p>
+          //   </div>
+          //   <div className={styles.box_flex}>
+          //     <p>
+          //       Nếu có bất kỳ vấn đề gì với đơn hàng, xin vui lòng liên hệ
+          //       ngay qua số điện thoại/Zalo: {detailsInfo.data.customer.assign.phone} để được
+          //       hỗ trợ nhanh chóng.
+          //     </p>
+          //     <Image
+          //       src={'/iconsSupport.png'}
+          //       alt="error"
+          //       width={372}
+          //       height={288}
+          //     />
+          //   </div>
+          //   <div className={styles.box_flex}>
+          //     <Image
+          //       src={"/iconsPayment.png"}
+          //       alt="error"
+          //       width={372}
+          //       height={288}
+          //     />
+          //     <p>
+          //       Vui lòng thanh toán số tiền trong đơn hàng để chúng tôi có thể
+          //       xử lý đơn hàng của Quý khách ngay lập tức.
+          //     </p>
+          //   </div>
+          //   <Button onClick={SetPayments} className={styles.btn_MT}>
+          //     Thanh toán
+          //   </Button>
+          // </div>
+          //     </ReactCardFlip>
+          <div
+            id="QR"
+            className={`${styles.container} ${styles.height_left} ${styles.tks}`}
+          >
+            <div className={styles.Payhead}>
+              <Image
+                src={imgTks}
+                className={styles.imgTks}
+                alt="error"
+                width={523}
+                height={599}
+              />
             </div>
-
-            <div
-              className={`${styles.container} ${styles.paymentMT} ${styles.height_left} `}
-            >
-              <div className={styles.box_flex}>
-                <Image
-                  src={"/iconsProduct.png"}
-                  alt="error"
-                  width={372}
-                  height={288}
-                />
-                <p>
-                  Thời gian sản xuất dự kiến từ 8-10 ngày. Không tính chủ nhật
-                  và nghỉ lễ.
-                </p>
-              </div>
-
-              <div className={styles.box_flex}>
-                <p>
-                  Nhận hàng được mở hàng kiểm tra. Đúng hàng, đủ số lượng sản
-                  phẩm.
-                </p>
-                <Image
-                  src={"/iconscheck.png"}
-                  alt="error"
-                  width={372}
-                  height={288}
-                />
-              </div>
-              <div className={styles.box_flex}>
-                <Image
-                  src={"/iconsSupport.png"}
-                  alt="error"
-                  width={372}
-                  height={288}
-                />
-                <p>
-                  Nếu gặp sự cố trong quá trình kiểm hàng và giao nhận hàng.
-                  Mình liên hệ lại qua số điện thoại/ Zalo:{" "}
-                  {detailsInfo.data.customer.assign.phone} để có thể xử lý kịp
-                  thời .
-                </p>
-              </div>
-            </div>
-          </ReactCardFlip>
+          </div>
         )}
 
         <div className={`${styles.container} ${styles.transport}`}>
           <p className="darkColor">Vận chuyển và nhận hàng</p>
-          <p>
-            Mã vận chuyển :{" "}
-            {detailsInfo.data.ships.track || "Chưa có thông tin"}
-          </p>
+
+          {detailsInfo.data.ships.track ? (
+            <p>Mã vận chuyển : {detailsInfo.data.ships.track}</p>
+          ) : (
+            <p></p>
+          )}
+
           <p>
             Đơn vị vận chuyển :{" "}
-            {detailsInfo.data.ships.delivery.text || "Chưa có thông tin"}
+            {detailsInfo.data.ships.delivery?.text || "Chưa có thông tin"}
           </p>
           <p>
             Dự kiến nhận hàng :{" "}
             {/* thời gian dự kiến hoặc sau 7 ngày đơn hàng đc tạo */}
             {new Date(
-              detailsInfo.data.ships.time_received ||
-                detailsInfo.data.delivered_at + 7 * 24 * 60 * 60 * 1000
+              detailsInfo.data.ships.time_received * 1000 ||
+                detailsInfo.data.delivered_at * 1000 + 7 * 24 * 60 * 60 * 1000
             ).toLocaleDateString("en-DE")}
           </p>
-          <p>Phí vận chuyển : {"Khách hàng thanh toán phí ship"}</p>
+          <p>
+            Phí vận chuyển :{" "}
+            {detailsInfo.data.ships.freeShip
+              ? "Miễn phí"
+              : "Khách hàng thanh toán phí ship"}
+          </p>
         </div>
       </div>
     </div>
