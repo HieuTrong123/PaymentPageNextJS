@@ -19,7 +19,7 @@ const Popup = ({ show, children, onClose }: Popup) => {
               height={354}
               onClick={onClose}
             />
-            <h2>Tạo gói cước mới</h2>
+            <h2>Tạo thông tin thanh toán</h2>
           </div>
           {children}
         </div>

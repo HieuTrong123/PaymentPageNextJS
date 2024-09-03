@@ -566,90 +566,127 @@ export default function Home({ searchParams }: any) {
               <Popup show={showPopup} onClose={togglePopup}>
                 <div className={styles.popup_container}>
                   <div
-                    className={`${styles.container} ${styles.popup_left} l-5`}
+                    className={`${styles.container} ${styles.popup_left} l-5 c-12`}
                   >
-                    <p>Lưu ý</p>
                     <div>
-                      <h1>Không chỉnh sửa thông tin</h1>
+                      <div className={styles.popupleft_head}>
+                        <Image
+                          src={"/no-edit.png"}
+                          alt="error"
+                          width={30}
+                          height={30}
+                        />
+                        <h1>
+                          <span
+                            className={`${styles.popup_redcolor} darkColor`}
+                          >
+                            KHÔNG
+                          </span>{" "}
+                          chỉnh sửa thông tin
+                        </h1>
+                      </div>
                       <p>
-                        Mã QR đã đi kèm SỐ TÀI KHOẢN, SỐ TIỀN và MÃ GÓI CƯỚC,
-                        bạn vui lòngkhông chỉnh sửa thông tin sau khi quét mã
+                        Mã QR đã đi kèm 
+                        <span className="darkColor">SỐ TÀI KHOẢN, SỐ TIỀN</span>
+                         và 
+                        <span className="darkColor">MÃ GÓI CƯỚC</span>, bạn vui
+                        lòng 
+                        <span className={styles.popup_redcolor}>
+                          không chỉnh sửa thông tin
+                        </span>
+                         sau khi quét mã.
                       </p>
                     </div>
 
                     <div>
-                      <h1>Không thể quét mã QR</h1>
+                      <div className={styles.popupleft_head}>
+                        <Image
+                          src={"/iconserror.png"}
+                          alt="error"
+                          width={30}
+                          height={30}
+                        />
+                        <h1>Không thể quét mã QR</h1>
+                      </div>
+
                       <p>
-                        Mã QR đã đi kèm SỐ TÀI KHOẢN, SỐ TIỀN và MÃ GÓI CƯỚC,
-                        bạn vui lòngkhông chỉnh sửa thông tin sau khi quét mã
+                        Trường hợp không quét được mã QR, bạn hãy nhập chính xác
+                        số tài khoản và số tiền cần thanh toán trên màn hình.
                       </p>
                     </div>
 
                     <div>
-                      <h1>Tự động kích hoạt gói cước</h1>
+                      <div className={styles.popupleft_head}>
+                        <Image
+                          src={"/iconscall.png"}
+                          alt="error"
+                          width={30}
+                          height={30}
+                        />
+                        <h1>Không thể quét mã QR</h1>
+                      </div>
+
                       <p>
-                        Mã QR đã đi kèm SỐ TÀI KHOẢN, SỐ TIỀN và MÃ GÓI CƯỚC,
-                        bạn vui lòngkhông chỉnh sửa thông tin sau khi quét mã
+                        Trường hợp không quét được mã QR, bạn hãy nhập chính xác
+                        số tài khoản và số tiền cần thanh toán trên màn hình.
                       </p>
                     </div>
-
-                    <div>
-                      <h1>Liên hệ với chúng tôi</h1>
-                      <p>
-                        Mã QR đã đi kèm SỐ TÀI KHOẢN, SỐ TIỀN và MÃ GÓI CƯỚC,
-                        bạn vui lòngkhông chỉnh sửa thông tin sau khi quét mã
-                      </p>
-                    </div>
-
-                    <div>
-                      <h1>Xuất hóa đơn</h1>
+                    <div className={styles.popupleft_head}>
+                      <Image
+                        src={"/zalo_icon.png"}
+                        alt="error"
+                        width={30}
+                        height={30}
+                      />
+                      <h1>CSKH : 0912345678</h1>
                     </div>
                   </div>
-                  <div className={`${styles.container} ${styles.popup_right}`}>
-                    <div className={styles.popup_right_top}>
-                      <h1>Tạo mã gói cước thành công</h1>
+                  <div className={` ${styles.popup_right} c-12`}>
+                    <div className={` ${styles.popup_right_top}`}>
+                      <h1>Thông tin thanh toán</h1>
                       <p>
                         Vui lòng kiểm tra thông tin dưới đây và quét mã QR để
                         thanh toán
                       </p>
-                      <img
-                        className={styles.QR_popup}
-                        src={`https://img.vietqr.io/image/${BankInfo.BANKID}-${
-                          BankInfo.ACCOUNT_NO
-                        }-compact.png?amount=${
-                          detailsInfo.data.totalMoneyAfterVATorDiscount -
-                          detailsInfo.data.totalPay
-                        }&addInfo=${
-                          detailsInfo.data.code + " Thanh toan don hang"
-                        }&accountName=${BankInfo.ACCOUNT_NAME}`}
+                      <Image
+                        src={"/QR2.png"}
                         alt="error"
+                        className={styles.QR_popup}
                         width={372}
                         height={288}
                       />
                     </div>
-                    <div className={styles.popup_right_bottom}>
+                    <div className={`${styles.popup_right_bottom}`}>
                       <div className={styles.rb_line}>
                         <div className={styles.box_popup}>
                           <p>Ngân hàng</p>
-                          <p className="darkColor">Techcombank</p>
+                          <p className="darkColor">
+                            Thương mại Cổ phần Á Châu ACB
+                          </p>
                         </div>
                         <div className={styles.box_popup}>
                           <p>Tên tài khoản</p>
-                          <p className="darkColor">Mai Hong Phong</p>
+                          <p className="darkColor">NGUYEN VAN AN</p>
                         </div>
                         <div className={styles.box_popup}>
                           <p>Số tài khoản</p>
-                          <p className="darkColor">1561544561123</p>
+                          <p className={`darkColor ${styles.popup_bluecolor}`}>
+                            01234567
+                          </p>
                         </div>
                       </div>
                       <div>
                         <div className={styles.box_popup}>
                           <p>Số tiền cần chuyển</p>
-                          <p className="darkColor">550.000 đ</p>
+                          <p className={`darkColor ${styles.popup_bluecolor}`}>
+                            5.000.000 đ
+                          </p>
                         </div>
                         <div className={styles.box_popup}>
                           <p>Nội dung chuyển khoản</p>
-                          <p className="darkColor">43J8Z3</p>
+                          <p className={`darkColor ${styles.popup_bluecolor}`}>
+                            YYH157
+                          </p>
                         </div>
                       </div>
                     </div>
